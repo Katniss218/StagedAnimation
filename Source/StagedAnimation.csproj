@@ -84,6 +84,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnimationStates.cs" />
+    <Compile Include="ModuleAnimateKatnissified.cs" />
     <Compile Include="ModuleAnimateGenericExtra.cs" />
     <Compile Include="ModuleStagedAnimation.cs" />
     <Compile Include="PartEx.cs" />
