@@ -6,9 +6,15 @@ namespace StagedAnimation
 {
 	public class ModuleAnimateKatnissified : PartModule, IScalarModule
 	{
+		/// <summary>
+		/// Name of the animations to control
+		/// </summary>
 		[KSPField]
 		public string animationName = "";
 
+		/// <summary>
+		/// The animations referenced by this module will be put in this layer.
+		/// </summary>
 		[KSPField]
 		public int layer = 1;
 
@@ -24,14 +30,20 @@ namespace StagedAnimation
 		[KSPField( isPersistant = true )]
 		public float animSpeed = 1.0f;
 
+		/// <summary>
+		/// The current state of the animation.
+		/// </summary>
 		[KSPField( isPersistant = true )]
 		public AnimationStates animState;
 
+		/// <summary>
+		/// If true, it'll enable the animations to be triggered via the staging system.
+		/// </summary>
 		[KSPField]
 		public bool enableStaged = false;
 
 		/// <summary>
-		/// True if the animation is playing in reverse.
+		/// True if the animation is playing (or last played) in reverse.
 		/// </summary>
 		[KSPField( isPersistant = true )]
 		public bool animReversed = true;
@@ -39,20 +51,29 @@ namespace StagedAnimation
 		[KSPField]
 		public float evaDistance = 5.0f;
 
+		/// <summary>
+		/// Label that will be displayed for playing the animation forward
+		/// </summary>
 		[KSPField]
 		public string startEventGUIName = "#autoLOC_6001354";
 
+		/// <summary>
+		/// Label that will be displayed for playing the animation in reverse
+		/// </summary>
 		[KSPField]
 		public string endEventGUIName = "#autoLOC_6001354";
 
+		/// <summary>
+		/// Label that will be displayed for toggling the animation
+		/// </summary>
 		[KSPField]
 		public string actionGUIName = "#autoLOC_6001354";
 
 		[KSPField]
 		public bool disableAfterPlaying;
 
-		[KSPField( isPersistant = true )]
-		public bool animationIsDisabled;
+		//[KSPField( isPersistant = true )]
+		//public bool animationIsDisabled;
 
 		protected Animation[] anims = null;
 
@@ -89,42 +110,45 @@ namespace StagedAnimation
 
 			if( animReversed )
 			{
-				for( int i = 0; i < anims.Length; i++ )
+				foreach( var anim in anims )
 				{
-					Debug.Log( "ANIMKAT-G playing anim on " + anims[i].gameObject.name + "" );
+					Debug.Log( "ANIMKAT-G playing anim on " + anim.gameObject.name + "" );
 
-					anims[i][animationName].speed = (!HighLogic.LoadedSceneIsEditor) ? (-1.0f) : (-10.0f * anims[i][animationName].length);
-					anims[i].Play( animationName );
+					anim[animationName].speed = (!HighLogic.LoadedSceneIsEditor) ? (-1.0f) : (-10.0f * anim[animationName].length);
+					anim.Play( animationName );
 				}
+
 				toggleEvent.guiName = startEventGUIName;
 				OnMoving.Fire( 1.0f, 0.0f );
 			}
 			else
 			{
-				for( int i = 0; i < anims.Length; i++ )
+				foreach( var anim in anims )
 				{
-					Debug.Log( "ANIMKAT-G playing anim on " + anims[i].gameObject.name + "" );
+					Debug.Log( "ANIMKAT-G playing anim on " + anim.gameObject.name + "" );
 
-					anims[i][animationName].speed = (!HighLogic.LoadedSceneIsEditor) ? 1.0f : (10.0f * anims[i][animationName].length);
-					anims[i].Play( animationName );
+					anim[animationName].speed = (!HighLogic.LoadedSceneIsEditor) ? 1.0f : (10.0f * anim[animationName].length);
+					anim.Play( animationName );
 				}
+
 				toggleEvent.guiName = endEventGUIName;
 				OnMoving.Fire( 0.0f, 1.0f );
 			}
+
 			animState = AnimationStates.MOVING;
 
-			if( HighLogic.LoadedSceneIsFlight && !animationIsDisabled && disableAfterPlaying && !animReversed )
+			if( HighLogic.LoadedSceneIsFlight && animState != AnimationStates.DISABLED && disableAfterPlaying && !animReversed )
 			{
-				animationIsDisabled = true;
+				animState = AnimationStates.DISABLED;
 			}
 		}
 
 		public void PlayStagedAnim()
 		{
 			if( !animReversed )
-            {
+			{
 				return;
-            }
+			}
 
 			Toggle();
 		}
@@ -169,7 +193,7 @@ namespace StagedAnimation
 			}
 
 			if( enableStaged )
-            {
+			{
 				if( part.stagingIcon == string.Empty && overrideStagingIconIfBlank )
 				{
 					part.stagingIcon = "DECOUPLER_VERT";
@@ -202,25 +226,25 @@ namespace StagedAnimation
 
 			// Set up the animations.
 			// This will run when the part is being spawned in the VAB.
-			for( int i = 0; i < anims.Length; i++ )
+			foreach( var anim in anims )
 			{
-				anims[i][animationName].enabled = true;
-				anims[i][animationName].layer = layer;
-				anims[i][animationName].speed = 0.0f; // this is important
-				anims[i][animationName].weight = 1.0f;
-				anims[i][animationName].normalizedTime = animTime;
+				anim[animationName].enabled = true;
+				anim[animationName].layer = layer;
+				anim[animationName].speed = 0.0f; // this is important
+				anim[animationName].weight = 1.0f;
+				anim[animationName].normalizedTime = animTime;
 			}
 
 			if( animState == AnimationStates.MOVING )
 			{
-				for( int i = 0; i < anims.Length; i++ )
+				foreach( var anim in anims )
 				{
-					anims[i][animationName].speed = animSpeed;
-					anims[i].Play( animationName );
+					anim[animationName].speed = animSpeed;
+					anim.Play( animationName );
 				}
 				OnMoving.Fire( animTime, (animSpeed > 0.0f) ? 1.0f : 0.0f );
 			}
-		
+
 			base.part.ScheduleSetCollisionIgnores();
 
 			toggleAction.active = true;
@@ -240,21 +264,22 @@ namespace StagedAnimation
 
 		private void FixedUpdate()
 		{
-			toggleEvent.active = !animationIsDisabled && animState != AnimationStates.MOVING;
-			toggleAction.active = !animationIsDisabled && animState != AnimationStates.MOVING;
+			// The button shall be hidden if the animation is not currently ready to be played.
+			toggleEvent.active = animState == AnimationStates.READY;
+			toggleAction.active = animState == AnimationStates.READY;
 
 			if( animState == AnimationStates.MOVING )
 			{
 				bool isAnyPlaying = false;
 
-				for( int i = 0; i < anims.Length; i++ )
+				foreach( var anim in anims )
 				{
-					if( anims[i].IsPlaying( animationName ) ) // if playing
+					if( anim.IsPlaying( animationName ) ) // if playing
 					{
 						isAnyPlaying = true;
 #warning ideally this would have separate values for each. Possibly saved as multiple config nodes of the same name.
-						animSpeed = anims[i][animationName].speed;
-						animTime = anims[i][animationName].normalizedTime;
+						animSpeed = anim[animationName].speed;
+						animTime = anim[animationName].normalizedTime;
 					}
 				}
 
@@ -262,18 +287,18 @@ namespace StagedAnimation
 				{
 					if( !animReversed )
 					{
-						for( int i = 0; i < anims.Length; i++ )
+						foreach( var anim in anims )
 						{
-							anims[i][animationName].normalizedTime = 1.0f;
+							anim[animationName].normalizedTime = 1.0f;
 						}
 
 						animTime = 1.0f;
 					}
 					else
 					{
-						for( int i = 0; i < anims.Length; i++ )
+						foreach( var anim in anims )
 						{
-							anims[i][animationName].normalizedTime = 0.0f;
+							anim[animationName].normalizedTime = 0.0f;
 						}
 
 						animTime = 0.0f;
@@ -295,7 +320,7 @@ namespace StagedAnimation
 
 		public void SetUIRead( bool state )
 		{
-			
+
 		}
 
 		public void SetUIWrite( bool state )
@@ -310,9 +335,9 @@ namespace StagedAnimation
 			{
 				bool isAnyPlaying = false;
 
-				for( int i = 0; i < anims.Length; i++ )
+				foreach( var anim in anims )
 				{
-					if( anims[i].IsPlaying( animationName ) ) // if playing
+					if( anim.IsPlaying( animationName ) ) // if playing
 					{
 						isAnyPlaying = true;
 					}

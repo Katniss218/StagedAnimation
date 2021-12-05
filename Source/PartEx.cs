@@ -42,21 +42,21 @@ namespace StagedAnimation
 
 			// find all animation modules
 			List<Animation> foundAnims = new List<Animation>();
-			for( int i = 0; i < modelNodes.Count; i++ )
+			foreach( var modelNode in modelNodes )
 			{
-				Part.FindModelComponents<Animation>( modelNodes[i], string.Empty, foundAnims ); // this does a recursive search.
+				Part.FindModelComponents<Animation>( modelNode, string.Empty, foundAnims ); // this does a recursive search.
 			}
 
 			// get the animations that match the specified name.
 			List<Animation> matchedAnims = new List<Animation>();
-			for( int i = 0; i < foundAnims.Count; i++ )
+			foreach( var anim in foundAnims )
 			{
-				if( foundAnims[i].GetClip( animationName ) == null )
+				if( anim.GetClip( animationName ) == null )
 				{
 					continue;
 				}
 
-				matchedAnims.Add( foundAnims[i] );
+				matchedAnims.Add( anim );
 			}
 
 			return matchedAnims.ToArray();

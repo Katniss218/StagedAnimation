@@ -45,12 +45,12 @@ namespace StagedAnimation
 
 		public void PlayStagedAnim()
 		{
-			for( int i = 0; i < anims.Length; i++ )
+			foreach( var anim in anims )
 			{
-				Debug.Log( "ANIMKAT playing anim on " + anims[i].gameObject.name + "" );
+				Debug.Log( "ANIMKAT playing anim on " + anim.gameObject.name + "" );
 
-				anims[i][animationName].speed = (!HighLogic.LoadedSceneIsEditor) ? (1.0f) : (10.0f * anims[i][animationName].length);
-				anims[i].Play( animationName );
+				anim[animationName].speed = (!HighLogic.LoadedSceneIsEditor) ? (1.0f) : (10.0f * anim[animationName].length);
+				anim.Play( animationName );
 			}
 			animState = AnimationStates.MOVING;
 
@@ -104,20 +104,20 @@ namespace StagedAnimation
 
 			// Set up the animations.
 			// This will run when the part is being spawned in the VAB.
-			for( int i = 0; i < anims.Length; i++ )
+			foreach( var anim in anims )
 			{
-				anims[i][animationName].enabled = true;
-				anims[i][animationName].layer = layer;
-				anims[i][animationName].speed = 0.0f; // this is important
-				anims[i][animationName].weight = 1.0f;
-				anims[i][animationName].normalizedTime = animTime;
+				anim[animationName].enabled = true;
+				anim[animationName].layer = layer;
+				anim[animationName].speed = 0.0f; // this is important
+				anim[animationName].weight = 1.0f;
+				anim[animationName].normalizedTime = animTime;
 			}
 			if( animState == AnimationStates.MOVING )
 			{
-				for( int i = 0; i < anims.Length; i++ )
+				foreach( var anim in anims )
 				{
-					anims[i][animationName].speed = animSpeed;
-					anims[i].Play( animationName );
+					anim[animationName].speed = animSpeed;
+					anim.Play( animationName );
 				}
 				OnMoving.Fire( animTime, (animSpeed > 0.0f) ? 1.0f : 0.0f );
 			}
@@ -139,14 +139,14 @@ namespace StagedAnimation
 			{
 				bool isAnyPlaying = false;
 
-				for( int i = 0; i < anims.Length; i++ )
+				foreach( var anim in anims )
 				{
-					if( anims[i].IsPlaying( animationName ) ) // if playing
+					if( anim.IsPlaying( animationName ) ) // if playing
 					{
 						isAnyPlaying = true;
 #warning ideally this would have separate values for each. Possibly saved as multiple config nodes of the same name.
-						animSpeed = anims[i][animationName].speed;
-						animTime = anims[i][animationName].normalizedTime;
+						animSpeed = anim[animationName].speed;
+						animTime = anim[animationName].normalizedTime;
 					}
 				}
 
@@ -173,10 +173,10 @@ namespace StagedAnimation
 			if( !string.IsNullOrEmpty( animationName ) )
 			{
 				bool isAnyPlaying = false;
-				
-				for( int i = 0; i < anims.Length; i++ )
+
+				foreach( var anim in anims )
 				{
-					if( anims[i].IsPlaying( animationName ) ) // if playing
+					if( anim.IsPlaying( animationName ) ) // if playing
 					{
 						isAnyPlaying = true;
 					}
